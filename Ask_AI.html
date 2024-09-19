@@ -5,6 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ask AI</title>
   <style>
+
+
+
+        .bold {
+            font-weight: bold;
+        }
+        .italic {
+            font-style: italic;
+        }
+        ul {
+            margin-top: 10px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        h2 {
+            color: #2980b9;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    font-size: 140%;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre-wrap; /* Allows wrapping */
+    word-wrap: break-word; /* Breaks long words */
+    line-height: 0.2; /* Adjust line height */
+    margin: 0; /* Remove default margin */
+}
+
+
+
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
@@ -30,14 +65,18 @@
       color: blue;
     }
     .ai {
-      color: green;
+      /* color: rgb(0, 0, 0); */
     }
+
+
+
+    
   </style>
 </head>
 <body>
 
   <h1>Ask AI</h1>
-  <div id="chatBox"></div>
+  <div id="chatBox" style="height: 70vh;width: 100%;"></div>
   <br>
   <input type="text" id="userInput" placeholder="Ask anything..." />
   <button id="sendButton">Send</button>
@@ -72,49 +111,84 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function askGemini(prompt) {
-      const apiKey = 'AIzaSyA6L0PGVMZAGk8AHE-KqRmXAwwPtw2nlXs'; // Replace with your actual API key
-      const url = 'https://language.googleapis.com/v1/documents:analyzeSentiment'; // Gemini endpoint
+    // async function askGemini(prompt) {
+    //   const apiKey = 'AIzaSyA6L0PGVMZAGk8AHE-KqRmXAwwPtw2nlXs'; // Replace with your actual API key
+    //   const url = 'https://language.googleapis.com/v1/documents:analyzeSentiment'; // Gemini endpoint
 
-      const body = {
-        "document": {
-          "content": prompt,
-          "type": "PLAIN_TEXT"
-        },
-        "encodingType": "UTF8"
-      };
+    //   const body = {
+    //     "document": {
+    //       "content": prompt,
+    //       "type": "PLAIN_TEXT"
+    //     },
+    //     "encodingType": "UTF8"
+    //   };
 
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify(body)
-        });
+    //   try {
+    //     const response = await fetch(url, {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         'Authorization': `Bearer ${apiKey}`
+    //       },
+    //       body: JSON.stringify(body)
+    //     });
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status} ${response.statusText}`);
+    //     if (!response.ok) {
+    //       throw new Error(`API error: ${response.status} ${response.statusText}`);
+    //     }
+
+    //     const data = await response.json();
+    //     const sentiment = data.documentSentiment.score; // Analyze sentiment (optional)
+
+    //     // You can modify this logic to generate a response based on sentiment
+    //     let aiResponse = `I understand you're interested in ${prompt}.`;
+    //     if (sentiment > 0) {
+    //       aiResponse += '  I can help you with that!';
+    //     } else if (sentiment < 0) {
+    //       aiResponse += '  Is there anything I can do to help you feel better?';
+    //     }
+
+    //     return aiResponse;
+    //   } catch (error) {
+    //     console.error('Error:', error);
+    //     return 'There was an error getting the response from AI.';
+    //   }
+    // }
+
+    function formatText(inputText) {
+            let formattedText = inputText
+
+
+
+                // Convert **text** to bold
+        .replace(/\*\*(.*?)\*\*/g, '<span class="bold">$1</span>')
+        // Convert *text* to italic
+        .replace(/\*(.*?)\*/g, '<span class="italic">$1</span>')
+        // Convert ~~text~~ to strikethrough
+        .replace(/~~(.*?)~~/g, '<span style="text-decoration: line-through;">$1</span>')
+        // Convert ## Heading to H2
+        .replace(/##\s(.*?)(\n|$)/g, '<h2>$1</h2>')
+        // Convert ### Heading to H3
+        .replace(/###\s(.*?)(\n|$)/g, '<h3>$1</h3>')
+        // Convert bullet points to unordered list
+        .replace(/\n\s*\*\s(.*?)(\n|$)/g, '<ul><li>$1</li></ul>')
+        // Convert number lists to ordered list
+        .replace(/\n\s*\d+\.\s(.*?)(\n|$)/g, '<ol><li>$1</li></ol>')
+        // Convert line breaks to paragraphs
+        .replace(/\n{2,}/g, '</p><p>')
+        // Convert code blocks (```code```)
+        .replace(/```(.*?)```/gs, '<pre>$1</pre>')
+        // Convert inline code (`code`)
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        // Convert [link text](url) to anchor tag
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+        // Wrap remaining lines in paragraphs
+        .replace(/^(.+)$/gm, '<p>$1</p>');
+
+
+            return formattedText;
         }
 
-        const data = await response.json();
-        const sentiment = data.documentSentiment.score; // Analyze sentiment (optional)
-
-        // You can modify this logic to generate a response based on sentiment
-        let aiResponse = `I understand you're interested in ${prompt}.`;
-        if (sentiment > 0) {
-          aiResponse += '  I can help you with that!';
-        } else if (sentiment < 0) {
-          aiResponse += '  Is there anything I can do to help you feel better?';
-        }
-
-        return aiResponse;
-      } catch (error) {
-        console.error('Error:', error);
-        return 'There was an error getting the response from AI.';
-      }
-    }
 
     // Event listener for the send button
     sendButton.addEventListener('click', async () => {
@@ -133,13 +207,19 @@
       // const prompt = "Write a story about a magic backpack.";
 
       const result = await model.generateContent(userQuestion);
-      console.log(result.response.text());
+      // console.log(result.response.text());
 
       // Get the AI's response using Gemini API
       // const aiResponse = await askGemini(userQuestion);
 
+
+
+      const inputText = `${result.response.text()}`;
+      const formattedText = formatText(inputText);
       // Display the AI's response
-      appendMessage('AI', result.response.text(), 'ai');
+      appendMessage('AI', `${formattedText}`, 'ai');
+      // appendMessage('AI', `${result.response.text()}`, 'ai');
+
     });
   </script>
 
