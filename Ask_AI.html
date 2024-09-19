@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #chatBox {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #userInput {
+      width: calc(100% - 110px);
+      padding: 10px;
+    }
+    #sendButton {
+      padding: 10px;
+    }
+    .message {
+      margin: 5px 0;
+    }
+    .user {
+      color: blue;
+    }
+    .ai {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ask AI</h1>
+  <div id="chatBox"></div>
+  <br>
+  <input type="text" id="userInput" placeholder="Ask anything..." />
+  <button id="sendButton">Send</button>
+
+
+
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+  <script type="module">
+    // Make sure to include these imports:
+      import { GoogleGenerativeAI } from "@google/generative-ai";
+  </script>
+
+  <script type="module">
+          import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const sendButton = document.getElementById('sendButton');
+    const userInput = document.getElementById('userInput');
+    const chatBox = document.getElementById('chatBox');
+
+    // Function to append message to chatBox
+    function appendMessage(sender, message, senderClass) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', senderClass);
+      messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatBox.appendChild(messageElement);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function askGemini(prompt) {
+      const apiKey = 'AIzaSyA6L0PGVMZAGk8AHE-KqRmXAwwPtw2nlXs'; // Replace with your actual API key
+      const url = 'https://language.googleapis.com/v1/documents:analyzeSentiment'; // Gemini endpoint
+
+      const body = {
+        "document": {
+          "content": prompt,
+          "type": "PLAIN_TEXT"
+        },
+        "encodingType": "UTF8"
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const sentiment = data.documentSentiment.score; // Analyze sentiment (optional)
+
+        // You can modify this logic to generate a response based on sentiment
+        let aiResponse = `I understand you're interested in ${prompt}.`;
+        if (sentiment > 0) {
+          aiResponse += '  I can help you with that!';
+        } else if (sentiment < 0) {
+          aiResponse += '  Is there anything I can do to help you feel better?';
+        }
+
+        return aiResponse;
+      } catch (error) {
+        console.error('Error:', error);
+        return 'There was an error getting the response from AI.';
+      }
+    }
+
+    // Event listener for the send button
+    sendButton.addEventListener('click', async () => {
+      const userQuestion = userInput.value.trim();
+      if (userQuestion === '') return;
+
+      // Display the user's input
+      appendMessage('You', userQuestion, 'user');
+
+      // Clear the input
+      userInput.value = '';
+
+      const genAI = new GoogleGenerativeAI('AIzaSyA6L0PGVMZAGk8AHE-KqRmXAwwPtw2nlXs');
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      // const prompt = "Write a story about a magic backpack.";
+
+      const result = await model.generateContent(userQuestion);
+      console.log(result.response.text());
+
+      // Get the AI's response using Gemini API
+      // const aiResponse = await askGemini(userQuestion);
+
+      // Display the AI's response
+      appendMessage('AI', result.response.text(), 'ai');
+    });
+  </script>
+
+</body>
+</html>
