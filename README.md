@@ -1,3 +1,2 @@
-
-https://btkcreations.github.io/SmartLearn/
+https://btkcreations.github.io/Smart-Learn/
 # SmartLearn
